@@ -25,6 +25,28 @@
     }
 }
 
+- (void)copyFile:(CDVInvokedUrlCommand*)command
+{
+    self.callbackId = command.callbackId;
+    if (@available(iOS 14, *)) {
+        NSString* filePathArg = [command.arguments objectAtIndex:0];
+        NSString* filePath = [filePathArg stringByReplacingOccurrencesOfString:@"file://" withString:@""];
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        if (![fileManager fileExistsAtPath:filePath]){
+            [self sendPluginResult:NO message:@"Cannot locate file for copying."];
+            return;
+        }
+        NSURL* localFileUrl = [ NSURL fileURLWithPath: filePath];
+        NSArray* urls = @[localFileUrl];
+        UIDocumentPickerViewController* picker = [[UIDocumentPickerViewController alloc] initForExportingURLs:urls asCopy:YES];
+        picker.shouldShowFileExtensions = YES;
+        picker.delegate = self;
+        [self.viewController presentViewController:picker animated:YES completion:nil];
+    } else {
+        [self sendPluginResult:NO message:@"Unsupported iOS version"];
+    }
+}
+
 - (void)documentPicker:(UIDocumentPickerViewController*)picker didPickDocumentsAtURLs:(NSArray<NSURL*>*)urls
 {
     if ([urls count] > 0) {

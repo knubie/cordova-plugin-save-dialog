@@ -15,6 +15,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
 
 public class SaveDialog extends CordovaPlugin {
     private static final int LOCATE_FILE = 1;
@@ -28,6 +30,8 @@ public class SaveDialog extends CordovaPlugin {
             this.locateFile(args.getString(0), args.getString(1));
         } else if (action.equals("saveFile")) {
             this.saveFile(Uri.parse(args.getString(0)), args.getString(1));
+        } else if (action.equals("copyFile")) {
+            this.copyFile(Uri.parse(args.getString(0)), Uri.parse(args.getString(1)));
         } else {
             return false;
         }
@@ -82,5 +86,40 @@ public class SaveDialog extends CordovaPlugin {
             this.callbackContext.error(e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private void copyFile(Uri srcUri, Uri dstUri) {
+        // FileInputStream in = new FileInputStream(srcUri);
+        try {
+            InputStream in = cordova.getActivity().getContentResolver().openInputStream(srcUri);
+            try {
+                ParcelFileDescriptor pfd = cordova.getActivity().getContentResolver().openFileDescriptor(dstUri, "w");
+                FileOutputStream fileOutputStream = new FileOutputStream(pfd.getFileDescriptor());
+                try {
+                    // Transfer bytes from in to out
+                    byte[] buf = new byte[1024];
+                    int len;
+                    while ((len = in.read(buf)) > 0) {
+                        fileOutputStream.write(buf, 0, len);
+                    }
+                    this.callbackContext.success(dstUri.toString());
+                } catch (Exception e) {
+                    this.callbackContext.error(e.getMessage());
+                    e.printStackTrace();
+                } finally {
+                    fileOutputStream.close();
+                    pfd.close();
+                }
+            } catch (Exception e) {
+                this.callbackContext.error(e.getMessage());
+                e.printStackTrace();
+            } finally {
+              in.close();
+            }
+        } catch (Exception e) {
+            this.callbackContext.error(e.getMessage());
+            e.printStackTrace();
+        }
+
     }
 }

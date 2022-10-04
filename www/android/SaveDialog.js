@@ -34,6 +34,11 @@ module.exports = {
                 clearBlob();
                 return Promise.reject(reason);
             });
+    },
+    copyFile(srcUri, name = "") {
+        return locateFile(null, name)
+            .then(dstUri => new Promise((resolve, reject) => {
+                exec(resolve, reject, "SaveDialog", "copyFile", [srcUri, dstUri])}));
     }
 };
 

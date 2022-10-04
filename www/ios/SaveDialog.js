@@ -19,5 +19,10 @@ let saveFile = (blob, name) => new Promise((resolve, reject) => {
 module.exports = {
     saveFile(blob, name = "untitled") {
         return saveFile(blob, name);
+    },
+    copyFile(filePath) {
+        return new Promise((resolve, reject) => {
+            exec(resolve, reject, "SaveDialog", "copyFile", [filePath]);
+        });
     }
 };
